@@ -41,7 +41,7 @@ namespace WowLogAnalyzer.Wow.Logs
                 end = nextEventLine.IndexOf(' ', end + 1); // Time part
 
                 DateTime dateTime =
-                   DateTime.ParseExact(nextEventLine.Substring(start, end - start), "M/dd HH:mm:ss.fff", CultureInfo.InvariantCulture);
+                   DateTime.ParseExact(nextEventLine.Substring(start, end - start), "M/d HH:mm:ss.fff", CultureInfo.InvariantCulture);
 
                 IEnumerator<String> enumeration = Tokenize(nextEventLine.Substring(end + 2)).GetEnumerator();
 

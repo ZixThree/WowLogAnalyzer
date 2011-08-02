@@ -9,6 +9,8 @@ namespace WowLogAnalyzer.Wow.Logs
     [Flags]
     public enum CombatLogSpellSchool
     {
+        None = 0x00,
+
         // Color.FromArgb(255, 255, 0)
         Physical = 0x01,
         // Color.FromArgb(255,230,128)

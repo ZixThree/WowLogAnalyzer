@@ -2,7 +2,7 @@
 <TestSettings name="Local" id="93131961-43f6-48e5-a54e-0fa130d2f0af" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
   <Description>These are default test settings for a local test run.</Description>
   <Deployment>
-    <DeploymentItem filename="WowDataTest\Data\" />
+    <DeploymentItem filename="TestData\" />
   </Deployment>
   <Execution>
     <TestTypeSpecific>

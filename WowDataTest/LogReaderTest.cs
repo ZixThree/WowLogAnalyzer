@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using System.Diagnostics;
 
 namespace WowDataTest
 {
@@ -123,16 +124,38 @@ namespace WowDataTest
         /// <summary>
         ///A test for ReadEvent
         ///</summary>
-        //[DeploymentItem("Data/WoWCombatLog_1.txt.gz")]
         [TestMethod()]
         public void ReadEventTest()
         {
-            Stream stream = new GZipStream(File.OpenRead("WoWCombatLog_1.txt.gz"), CompressionMode.Decompress);
-            LogReader target = new LogReader(stream);
-            int eventCount = 0;
-            while ( target.ReadEvent() != null )
-                eventCount++;
-            Assert.AreEqual<int>(1159, eventCount);
+            string[] testFiles = {
+                                     "General/WoWCombatLog_1.txt",
+                                     "General/WoWCombatLog_2.txt",
+                                     "Firelands/WoWCombatLog_20110801_Firelands_Lord_Rhyolith.txt"
+                                 };
+            int[] testFilesLength = {
+                                        1159,
+                                        29897,
+                                        766944
+                                    };
+            for ( int i = 0; i < testFiles.Length; i++ ) {
+                Stopwatch watch = new Stopwatch();
+                string testFile = testFiles[i];
+                int testFileEventLength = testFilesLength[i];
+                Stream stream = File.OpenRead(testFile);
+
+                watch.Start();
+
+                LogReader target = new LogReader(new BufferedStream(stream));
+                int eventCount = 0;
+                while ( target.ReadEvent() != null )
+                    eventCount++;
+
+                watch.Stop();
+                TimeSpan timeTaken = watch.Elapsed;
+                Assert.AreEqual<int>(testFileEventLength, eventCount);
+                // Process 50 000 lines per seconds. Include 250ms grace period to account for system variations.
+                Assert.IsTrue(timeTaken.TotalSeconds < ((double)testFileEventLength) / 50 / 1000 + 250);
+            }
         }
     }
 }

@@ -16,10 +16,17 @@ namespace WowLogAnalyzer.Wow.Logs
         RangeMissed,
 
         SpellDamage,
+        SpellHeal,
         SpellMissed,
+
         SpellSummon,
         SpellDispel,
         SpellEnergize,
+        SpellCreate,
+        SpellInstaKill,
+        SpellExtraAttacks,
+        SpellResurrect,
+        SpellInterrupt,
 
         SpellCastSuccess,
         SpellCastStart,
@@ -29,14 +36,28 @@ namespace WowLogAnalyzer.Wow.Logs
         SpellAuraRemoved,
         SpellAuraRefresh,
         SpellAuraAppliedDose,
+        SpellAuraRemovedDose,
 
         SpellPeriodicDamage,
         SpellPeriodicHeal,
         SpellPeriodicEnergize,
+        SpellPeriodicMissed,
+
+        SpellAuraBrokenSpell,
 
         PartyKill,
 
-        UnitDied
+        UnitDied,
+        UnitDestroyed,
+
+        DamageShield,
+        DamageSplit,
+        DamageShieldMissed,
+
+        EnvironmentalDamage,
+
+        EnchantApplied,
+        EnchantRemoved
     }
 
     public class LogEvent
@@ -47,7 +68,7 @@ namespace WowLogAnalyzer.Wow.Logs
         private CombatLogUnit _source;
         private CombatLogUnit _destination;
         private CombatLogSpell _spell;
-        // TODO: Environmental
+        private CombatLogEnvironmental _environmentalKind;
         private int _amount;
         private CombatLogSpellSchool _damageSchool;
         private int _extraAmount;
@@ -65,6 +86,8 @@ namespace WowLogAnalyzer.Wow.Logs
         private CombatLogSpell _extraSpell;
         private CombatLogAuraKind _auraKind;
         private string _failMessage;
+        private int _itemId;
+        private string _itemName;
 
         public LogEvent(DateTime timestamp, string eventName, IEnumerator<string> parameters)
         {
@@ -77,15 +100,25 @@ namespace WowLogAnalyzer.Wow.Logs
             // Prefix
             switch ( _name ) {
                 case LogEventName.RangeDamage: case LogEventName.RangeMissed:
-                case LogEventName.SpellDamage: case LogEventName.SpellMissed:
+                case LogEventName.SpellDamage: case LogEventName.SpellHeal:
+                case LogEventName.SpellMissed:
                 case LogEventName.SpellSummon: case LogEventName.SpellDispel:
-                case LogEventName.SpellEnergize:
+                case LogEventName.SpellEnergize: case LogEventName.SpellResurrect:
+                case LogEventName.SpellInterrupt:
                 case LogEventName.SpellCastSuccess: case LogEventName.SpellCastStart: case LogEventName.SpellCastFailed:
                 case LogEventName.SpellAuraApplied: case LogEventName.SpellAuraRemoved:
-                case LogEventName.SpellAuraRefresh: case LogEventName.SpellAuraAppliedDose:
+                case LogEventName.SpellAuraRefresh:
+                case LogEventName.SpellAuraAppliedDose: case LogEventName.SpellAuraRemovedDose:
                 case LogEventName.SpellPeriodicDamage: case LogEventName.SpellPeriodicHeal:
-                case LogEventName.SpellPeriodicEnergize:
+                case LogEventName.SpellPeriodicEnergize: case LogEventName.SpellPeriodicMissed:
+                case LogEventName.DamageShield: case LogEventName.DamageSplit: case LogEventName.DamageShieldMissed:
+                case LogEventName.SpellCreate: case LogEventName.SpellInstaKill:
+                case LogEventName.SpellExtraAttacks: case LogEventName.SpellAuraBrokenSpell:
                     _spell = ReadSpell();
+                    break;
+
+                case LogEventName.EnvironmentalDamage:
+                    _environmentalKind = ReadEnum<CombatLogEnvironmental>();
                     break;
             }
 
@@ -95,6 +128,9 @@ namespace WowLogAnalyzer.Wow.Logs
                 case LogEventName.RangeDamage:
                 case LogEventName.SpellDamage:
                 case LogEventName.SpellPeriodicDamage:
+                case LogEventName.DamageShield:
+                case LogEventName.DamageSplit:
+                case LogEventName.EnvironmentalDamage:
                     _amount = ReadInt32();
                     _overkill = ReadInt32();
                     _damageSchool = (CombatLogSpellSchool)ReadUInt32();
@@ -109,10 +145,22 @@ namespace WowLogAnalyzer.Wow.Logs
                 case LogEventName.SwingMissed:
                 case LogEventName.RangeMissed:
                 case LogEventName.SpellMissed:
+                case LogEventName.SpellPeriodicMissed:
+                case LogEventName.DamageShieldMissed:
                     _missKind = ReadEnum<CombatLogMissKind>();
-                    if ( _missKind == CombatLogMissKind.Block || _missKind == CombatLogMissKind.Absorb ) {
+                    if ( _missKind == CombatLogMissKind.Block ||
+                         _missKind == CombatLogMissKind.Absorb ||
+                         _missKind == CombatLogMissKind.Resist
+                       ) {
                         _amount = ReadInt32();
                     }
+                    break;
+
+                case LogEventName.SpellHeal:
+                    _amount = ReadInt32();
+                    _overkill = ReadInt32();
+                    _absorbed = ReadInt32();
+                    _critical = (String.Compare(ReadString(), "nil", StringComparison.InvariantCultureIgnoreCase) != 0);
                     break;
 
                 case LogEventName.SpellDispel:
@@ -120,9 +168,17 @@ namespace WowLogAnalyzer.Wow.Logs
                     _auraKind = ReadEnum<CombatLogAuraKind>();
                     break;
 
+                case LogEventName.SpellInterrupt:
+                    _extraSpell = ReadSpell();
+                    break;
+
                 case LogEventName.SpellEnergize:
                     _amount = ReadInt32();
                     _powerType = ReadInt32();
+                    break;
+
+                case LogEventName.SpellExtraAttacks:
+                    _amount = ReadInt32();
                     break;
 
                 case LogEventName.SpellPeriodicHeal:
@@ -138,6 +194,7 @@ namespace WowLogAnalyzer.Wow.Logs
                     break;
 
                 case LogEventName.SpellAuraAppliedDose:
+                case LogEventName.SpellAuraRemovedDose:
                     _auraKind = ReadEnum<CombatLogAuraKind>();
                     _amount = ReadInt32();
                     break;
@@ -146,15 +203,28 @@ namespace WowLogAnalyzer.Wow.Logs
                 case LogEventName.SpellAuraRemoved:
                 case LogEventName.SpellAuraRefresh:
                     _auraKind = ReadEnum<CombatLogAuraKind>();
-                    if ( _spell.Name.Equals("Power Word: Shield") ) {
-                        _amount = ReadInt32(); // Assumed to be right
+                    if ( parameters.MoveNext() ) {
+                        // Note: seems to be used for absorb effects.
+                        _amount = ParseInt32();
                         string unknown1 = ReadString();
                         string unknown2 = ReadString();
                     }
                     break;
 
+                case LogEventName.SpellAuraBrokenSpell:
+                    _extraSpell = ReadSpell();
+                    _auraKind = ReadEnum<CombatLogAuraKind>();
+                    break;
+
                 case LogEventName.SpellCastFailed:
                     _failMessage = ReadString();
+                    break;
+
+                case LogEventName.EnchantApplied:
+                case LogEventName.EnchantRemoved:
+                    _spell = new CombatLogSpell(-1, ReadString(), CombatLogSpellSchool.None);
+                    _itemId = ReadInt32();
+                    _itemName = ReadString();
                     break;
             }
 
@@ -201,6 +271,16 @@ namespace WowLogAnalyzer.Wow.Logs
         private int ReadInt32()
         {
             _parameters.MoveNext();
+            string value = _parameters.Current;
+            if ( value.StartsWith("0x") ) {
+                return Int32.Parse(value.Substring(2), System.Globalization.NumberStyles.HexNumber);
+            } else {
+                return Int32.Parse(value);
+            }
+        }
+
+        private int ParseInt32()
+        {
             string value = _parameters.Current;
             if ( value.StartsWith("0x") ) {
                 return Int32.Parse(value.Substring(2), System.Globalization.NumberStyles.HexNumber);
