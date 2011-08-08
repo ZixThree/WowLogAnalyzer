@@ -27,32 +27,30 @@ namespace WowLogAnalyzer.Wow.Logs
             Close();
         }
 
+        private const CultureInfo invariantCulture = CultureInfo.InvariantCulture;
         public LogEvent ReadEvent()
         {
             LogEvent result = null;
             line++;
-            //try {
-                String nextEventLine = _reader.ReadLine();
-                if ( nextEventLine == null )
-                    return null;
 
-                int start = 0;
-                int end = nextEventLine.IndexOf(' '); // Date part
-                end = nextEventLine.IndexOf(' ', end + 1); // Time part
+            String nextEventLine = _reader.ReadLine();
+            if ( nextEventLine == null )
+                return null;
 
-                DateTime dateTime =
-                   DateTime.ParseExact(nextEventLine.Substring(start, end - start), "M/d HH:mm:ss.fff", CultureInfo.InvariantCulture);
+            int start = 0;
+            int end = nextEventLine.IndexOf(' '); // Date part
+            end = nextEventLine.IndexOf(' ', end + 1); // Time part
 
-                IEnumerator<String> enumeration = Tokenize(nextEventLine.Substring(end + 2)).GetEnumerator();
+            DateTime dateTime =
+               DateTime.ParseExact(nextEventLine.Substring(start, end - start), "M/d HH:mm:ss.fff", invariantCulture);
 
-                enumeration.MoveNext();
-                string eventName = enumeration.Current;
+            IEnumerator<String> enumeration = Tokenize(nextEventLine.Substring(end + 2)).GetEnumerator();
 
-                result = new LogEvent(dateTime, eventName, enumeration);
-            //}
-            //catch ( Exception e ) {
-            //    throw new ApplicationException(String.Concat("Error at line number: ", line, "."), e);
-            //}
+            enumeration.MoveNext();
+            string eventName = enumeration.Current;
+
+            result = new LogEvent(dateTime, eventName, enumeration);
+
             return result;
         }
 

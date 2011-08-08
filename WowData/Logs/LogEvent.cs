@@ -27,6 +27,7 @@ namespace WowLogAnalyzer.Wow.Logs
         SpellExtraAttacks,
         SpellResurrect,
         SpellInterrupt,
+        SpellStolen,
 
         SpellCastSuccess,
         SpellCastStart,
@@ -42,6 +43,7 @@ namespace WowLogAnalyzer.Wow.Logs
         SpellPeriodicHeal,
         SpellPeriodicEnergize,
         SpellPeriodicMissed,
+        SpellPeriodicLeech,
 
         SpellAuraBrokenSpell,
 
@@ -104,13 +106,14 @@ namespace WowLogAnalyzer.Wow.Logs
                 case LogEventName.SpellMissed:
                 case LogEventName.SpellSummon: case LogEventName.SpellDispel:
                 case LogEventName.SpellEnergize: case LogEventName.SpellResurrect:
-                case LogEventName.SpellInterrupt:
+                case LogEventName.SpellInterrupt: case LogEventName.SpellStolen:
                 case LogEventName.SpellCastSuccess: case LogEventName.SpellCastStart: case LogEventName.SpellCastFailed:
                 case LogEventName.SpellAuraApplied: case LogEventName.SpellAuraRemoved:
                 case LogEventName.SpellAuraRefresh:
                 case LogEventName.SpellAuraAppliedDose: case LogEventName.SpellAuraRemovedDose:
                 case LogEventName.SpellPeriodicDamage: case LogEventName.SpellPeriodicHeal:
                 case LogEventName.SpellPeriodicEnergize: case LogEventName.SpellPeriodicMissed:
+                case LogEventName.SpellPeriodicLeech:
                 case LogEventName.DamageShield: case LogEventName.DamageSplit: case LogEventName.DamageShieldMissed:
                 case LogEventName.SpellCreate: case LogEventName.SpellInstaKill:
                 case LogEventName.SpellExtraAttacks: case LogEventName.SpellAuraBrokenSpell:
@@ -163,6 +166,7 @@ namespace WowLogAnalyzer.Wow.Logs
                     _critical = (String.Compare(ReadString(), "nil", StringComparison.InvariantCultureIgnoreCase) != 0);
                     break;
 
+                case LogEventName.SpellStolen:
                 case LogEventName.SpellDispel:
                     _extraSpell = ReadSpell();
                     _auraKind = ReadEnum<CombatLogAuraKind>();
@@ -175,6 +179,12 @@ namespace WowLogAnalyzer.Wow.Logs
                 case LogEventName.SpellEnergize:
                     _amount = ReadInt32();
                     _powerType = ReadInt32();
+                    break;
+
+                case LogEventName.SpellPeriodicLeech:
+                    _amount = ReadInt32();
+                    _powerType = ReadInt32();
+                    _extraAmount = ReadInt32();
                     break;
 
                 case LogEventName.SpellExtraAttacks:

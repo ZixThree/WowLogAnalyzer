@@ -14,6 +14,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		WowLogAnalyzer.vsmdi = WowLogAnalyzer.vsmdi
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleTest", "ConsoleTest\ConsoleTest.csproj", "{A218C4C1-B096-4FD8-93BD-8E6F30A0547A}"
+EndProject
 Global
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = WowLogAnalyzer.vsmdi
@@ -59,6 +61,16 @@ Global
 		{676F85FA-6BF9-4CA2-893B-96E0CD74BA29}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{676F85FA-6BF9-4CA2-893B-96E0CD74BA29}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{676F85FA-6BF9-4CA2-893B-96E0CD74BA29}.Release|x86.ActiveCfg = Release|Any CPU
+		{A218C4C1-B096-4FD8-93BD-8E6F30A0547A}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{A218C4C1-B096-4FD8-93BD-8E6F30A0547A}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{A218C4C1-B096-4FD8-93BD-8E6F30A0547A}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{A218C4C1-B096-4FD8-93BD-8E6F30A0547A}.Debug|x86.ActiveCfg = Debug|x86
+		{A218C4C1-B096-4FD8-93BD-8E6F30A0547A}.Debug|x86.Build.0 = Debug|x86
+		{A218C4C1-B096-4FD8-93BD-8E6F30A0547A}.Release|Any CPU.ActiveCfg = Release|x86
+		{A218C4C1-B096-4FD8-93BD-8E6F30A0547A}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{A218C4C1-B096-4FD8-93BD-8E6F30A0547A}.Release|Mixed Platforms.Build.0 = Release|x86
+		{A218C4C1-B096-4FD8-93BD-8E6F30A0547A}.Release|x86.ActiveCfg = Release|x86
+		{A218C4C1-B096-4FD8-93BD-8E6F30A0547A}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

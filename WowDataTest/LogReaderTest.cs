@@ -130,12 +130,20 @@ namespace WowDataTest
             string[] testFiles = {
                                      "General/WoWCombatLog_1.txt",
                                      "General/WoWCombatLog_2.txt",
-                                     "Firelands/WoWCombatLog_20110801_Firelands_Lord_Rhyolith.txt"
+                                     "4_1-The_Shattering/WoWCombatLog_BOT+BWD.txt",
+                                     "4_2-Rage_of_the_Firelands/WoWCombatLog_20110801_Firelands_Lord_Rhyolith.txt",
+                                     "4_2-Rage_of_the_Firelands/WoWCombatLog_20110802_Firelands_Shannox.txt",
+                                     "4_2-Rage_of_the_Firelands/WoWCombatLog_20110803_Firelands_Beth'tilac_wipeonly.txt",
+                                     "4_2-Rage_of_the_Firelands/WoWCombatLog_20110808_Firelands_Baleroc+Zul'Gurub.txt"
                                  };
             int[] testFilesLength = {
                                         1159,
                                         29897,
-                                        766944
+                                        418387,
+                                        766944,
+                                        835321,
+                                        173288,
+                                        302090
                                     };
             for ( int i = 0; i < testFiles.Length; i++ ) {
                 Stopwatch watch = new Stopwatch();
@@ -145,7 +153,7 @@ namespace WowDataTest
 
                 watch.Start();
 
-                LogReader target = new LogReader(new BufferedStream(stream));
+                LogReader target = new LogReader(new BufferedStream(stream,32768));
                 int eventCount = 0;
                 while ( target.ReadEvent() != null )
                     eventCount++;

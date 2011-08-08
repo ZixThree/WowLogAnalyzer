@@ -3,5 +3,5 @@
 *.suo
 /WowLogAnalyzer/bin
 /WowLogAnalyzer/obj
-
+/TestData
 /TestResults
