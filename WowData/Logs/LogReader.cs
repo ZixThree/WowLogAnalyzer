@@ -5,6 +5,7 @@ using System.Text;
 using System.IO;
 using System.Globalization;
 using System.Threading;
+using System.Collections.Concurrent;
 
 namespace WowLogAnalyzer.Wow.Logs
 {
@@ -26,16 +27,16 @@ namespace WowLogAnalyzer.Wow.Logs
         int _currentBlock;
         int _nextBlock;
         Queue<ProcessingBlock> _processedBlock = new Queue<ProcessingBlock>();
-        Dictionary<int, ProcessingBlock> _readyBlocks = new Dictionary<int, ProcessingBlock>();
+        ConcurrentDictionary<int, ProcessingBlock> _readyBlocks = new ConcurrentDictionary<int, ProcessingBlock>();
         Queue<LogEvent> _resultEvents = new Queue<LogEvent>();
-        Queue<ProcessingBlock> _recycling = new Queue<ProcessingBlock>();
+        ConcurrentQueue<ProcessingBlock> _recycling = new ConcurrentQueue<ProcessingBlock>();
 
         private class ProcessingBlock
         {
             public ManualResetEventSlim Ready = new ManualResetEventSlim(false);
             public int BlockNumber;
             public string[] InputData = new String[BlockSize];
-            public Queue<LogEvent> OutputData = new Queue<LogEvent>(BlockSize+1);
+            public Queue<LogEvent> OutputData = new Queue<LogEvent>(BlockSize + 1);
         }
 
         public LogReader(Stream stream)
@@ -71,9 +72,7 @@ namespace WowLogAnalyzer.Wow.Logs
 
                     // Special case verification where block would be empty (end of file on first record)
                     if ( block.InputData[0] != null ) {
-                        lock ( _readyBlocks ) {
-                            _readyBlocks.Add(block.BlockNumber, block);
-                        }
+                        _readyBlocks[block.BlockNumber] = block;
                     }
 
                     ThreadPool.QueueUserWorkItem(ProcessBlock, block);
@@ -84,6 +83,7 @@ namespace WowLogAnalyzer.Wow.Logs
                         break;
 
                 } else {
+                    //_newDataAvailable.Set();
                     _dataNeeded.Wait(token);
                 }
             }
@@ -92,19 +92,16 @@ namespace WowLogAnalyzer.Wow.Logs
 
         private void TryRecyclingBlock(out ProcessingBlock block, int blockNumber)
         {
-            lock ( _recycling ) {
-                if ( _recycling.Count > 0 ) {
-                    block = _recycling.Dequeue();
-                    for ( int i = 0; i < block.InputData.Length; i++ ) {
-                        block.InputData[i] = null;
-                        block.OutputData.Clear();
-                        block.Ready.Reset();
-                    }
-                } else {
-                    block = new ProcessingBlock();
+            if ( _recycling.TryDequeue(out block) ) {
+                for ( int i = 0; i < block.InputData.Length; i++ ) {
+                    block.InputData[i] = null;
+                    block.OutputData.Clear();
+                    block.Ready.Reset();
                 }
-                block.BlockNumber = _nextBlock++;
+            } else {
+                block = new ProcessingBlock();
             }
+            block.BlockNumber = blockNumber;
         }
 
         private void ProcessBlock(object blockObject)
@@ -191,13 +188,11 @@ namespace WowLogAnalyzer.Wow.Logs
         public LogEvent ReadEvent()
         {
             ProcessingBlock current = null;
-            while ( current == null) {
+            while ( current == null ) {
                 bool dataFound = false;
-                lock ( _readyBlocks ) {
-                    dataFound = _readyBlocks.TryGetValue(_currentBlock, out current);
-                }
+                dataFound = _readyBlocks.TryGetValue(_currentBlock, out current);
                 if ( !dataFound ) {
-                    if(_endOfFile) {
+                    if ( _endOfFile ) {
                         return null;
                     }
                     current = null;
@@ -217,9 +212,7 @@ namespace WowLogAnalyzer.Wow.Logs
             LogEvent result = current.OutputData.Dequeue();
             if ( current.OutputData.Count == 0 ) {
                 _currentBlock++;
-                lock ( _recycling ) {
-                    _recycling.Enqueue(current);
-                }
+                _recycling.Enqueue(current);
             }
             return result;
         }
