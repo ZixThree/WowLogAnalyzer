@@ -3,5 +3,9 @@
 *.suo
 /WowLogAnalyzer/bin
 /WowLogAnalyzer/obj
+/WowData/bin
+/WowData/obj
+/WowDataTest/bin
+/WowDataTest/obj
 /TestData
 /TestResults

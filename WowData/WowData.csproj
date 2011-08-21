@@ -45,6 +45,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Logs\CombatLog.cs" />
     <Compile Include="Logs\CombatLogAuraKind.cs" />
     <Compile Include="Logs\CombatLogEnvironmental.cs" />
     <Compile Include="Logs\CombatLogMissKind.cs" />
@@ -54,6 +55,7 @@
     <Compile Include="Logs\CombatLogSpellSchool.cs" />
     <Compile Include="Logs\CombatLogUnit.cs" />
     <Compile Include="Logs\CombatLogUnitFlags.cs" />
+    <Compile Include="Logs\EventRepository.cs" />
     <Compile Include="Logs\LogEvent.cs" />
     <Compile Include="Logs\LogReader.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

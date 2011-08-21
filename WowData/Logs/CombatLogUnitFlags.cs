@@ -5,6 +5,7 @@ using System.Text;
 
 namespace WowLogAnalyzer.Wow.Logs
 {
+    [Flags]
     public enum CombatLogUnitFlags : uint
     {
         // Object Type
