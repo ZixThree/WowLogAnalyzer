@@ -47,6 +47,11 @@ namespace WowLogAnalyzer.Wow.Logs
             _readerThread.Start();
         }
 
+        public Stream BaseStream
+        {
+            get { return _reader.BaseStream; }
+        }
+
         private void StartReading()
         {
             CancellationToken token = _cancellationToken.Token;
@@ -131,7 +136,7 @@ namespace WowLogAnalyzer.Wow.Logs
             enumeration.MoveNext();
             string eventName = enumeration.Current;
 
-            return new LogEvent(dateTime, eventName, enumeration);
+            return new LogEvent(nextEventLine, dateTime, eventName, enumeration);
         }
 
         private void ReadTimestamp(string nextEventLine, out DateTime dateTime, ref int index)
